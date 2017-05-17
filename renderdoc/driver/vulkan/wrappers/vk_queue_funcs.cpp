@@ -643,6 +643,9 @@ VkResult WrappedVulkan::vkQueueSubmit(VkQueue queue, uint32_t submitCount,
 
       if(capframe)
       {
+        RDCLOG("vkQueueSubmit() cmd buf %llu baked %llu", record->GetResourceID(),
+               record->bakedCommands->GetResourceID());
+
         // for each bound descriptor set, mark it referenced as well as all resources currently
         // bound to it
         for(auto it = record->bakedCommands->cmdInfo->boundDescSets.begin();
@@ -685,6 +688,10 @@ VkResult WrappedVulkan::vkQueueSubmit(VkQueue queue, uint32_t submitCount,
           record->bakedCommands->cmdInfo->subcmds[sub]->bakedCommands->AddReferencedIDs(refdIDs);
           GetResourceManager()->MarkResourceFrameReferenced(
               record->bakedCommands->cmdInfo->subcmds[sub]->GetResourceID(), eFrameRef_Read);
+
+          RDCLOG("   sub %u id marking %llu ref'd %llu baked", (uint32_t)sub,
+                 record->bakedCommands->cmdInfo->subcmds[sub]->GetResourceID(),
+                 record->bakedCommands->cmdInfo->subcmds[sub]->bakedCommands->GetResourceID());
 
           record->bakedCommands->cmdInfo->subcmds[sub]->bakedCommands->AddRef();
         }

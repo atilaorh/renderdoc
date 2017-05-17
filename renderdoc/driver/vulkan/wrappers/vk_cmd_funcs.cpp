@@ -646,6 +646,9 @@ VkResult WrappedVulkan::vkBeginCommandBuffer(VkCommandBuffer commandBuffer,
     record->bakedCommands->cmdInfo->device = record->cmdInfo->device;
     record->bakedCommands->cmdInfo->allocInfo = record->cmdInfo->allocInfo;
 
+    RDCLOG("vkBeginCommandBuffer() %llu -> baked %llu", record->GetResourceID(),
+           record->bakedCommands->GetResourceID());
+
     {
       CACHE_THREAD_SERIALISER();
 
@@ -789,6 +792,9 @@ VkResult WrappedVulkan::vkEndCommandBuffer(VkCommandBuffer commandBuffer)
     // ensure that we have a matching begin
     RDCASSERT(record->bakedCommands);
 
+    RDCLOG("vkEndCommandBuffer() %llu -> baked %llu", record->GetResourceID(),
+           record->bakedCommands->GetResourceID());
+
     {
       CACHE_THREAD_SERIALISER();
 
@@ -812,6 +818,8 @@ VkResult WrappedVulkan::vkResetCommandBuffer(VkCommandBuffer commandBuffer,
 
   if(record)
   {
+    RDCLOG("vkResetCommandBuffer() %llu", record->GetResourceID());
+
     // all we need to do is remove the existing baked commands.
     // The application will still need to call begin command buffer itself.
     // this function is essentially a driver hint as it cleans up implicitly
@@ -2608,6 +2616,9 @@ void WrappedVulkan::vkCmdExecuteCommands(VkCommandBuffer commandBuffer, uint32_t
       VkResourceRecord *execRecord = GetRecord(pCmdBuffers[i]);
       if(execRecord->bakedCommands)
       {
+        RDCLOG("vkCmdExecuteCommands() on %llu -> exec %llu baked %llu", record->GetResourceID(),
+               execRecord->GetResourceID(), execRecord->bakedCommands->GetResourceID());
+
         record->cmdInfo->dirtied.insert(execRecord->bakedCommands->cmdInfo->dirtied.begin(),
                                         execRecord->bakedCommands->cmdInfo->dirtied.end());
         record->cmdInfo->boundDescSets.insert(
